@@ -23,7 +23,8 @@ sino que son sustitucciones de texto que se hacen antes de la compilacion
 #define BIT(a, n) ((a & (1 << n)) ? 1 : 0)
 
 // set the 'n' bit of 'a' with 1 if 'on' or 0 if !'on'
-#define BIT_SET(a, n, on) (on ? (a) |= (1 << n) : (a) &= ~(1 << n))
+//#define BIT_SET(a, n, on) (on ? (a) |= (1 << n) : (a) &= ~(1 << n))
+#define BIT_SET(a, n, on) {if (on) (a) |= (1 << n); else (a) &= ~(1 << n);}
 
 #define BETWEEN(a, b, c) ((a >= b) && (a <= c))
 

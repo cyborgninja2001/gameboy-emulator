@@ -6,7 +6,7 @@
 
 // R: register
 // MR: Memory location of the register (that hold the register)
-// D8: 8 bits inmediatos?
+// D8: 8 bits inmediatos
 typedef enum { // AM: Adressing Mode
     AM_IMP, // implicito (no requieren operandos)
     AM_R_D16,
@@ -116,5 +116,7 @@ typedef struct {
 } instruction;
 
 instruction *instruction_by_opcode(u8 opcode);
+
+char *inst_name(in_type t);
 
 #endif

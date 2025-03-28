@@ -29,10 +29,25 @@ typedef struct {
 
     bool halted; // Es un indicador que muestra si la CPU esta en estado halted (detenida)
     bool stepping; //Cuando esta activado, la CPU ejecutara solo una instruccion y luego se detendra (for debugging)
+
+    bool int_master_enable;
 } cpu_context;
 
 void cpu_init();
 bool cpu_step();
+
+// function pointer: return void & takes a cpu_context pointer
+typedef void (*IN_PROC)(cpu_context *); // es un tipo de dato
+
+// we'll get the isntruction processor by the instruction type
+// so we can create a function for each instruction
+IN_PROC inst_get_processor(in_type type);
+
+// macros to get the flags
+#define CPU_FLAG_Z BIT(ctx->regs.f, 7)
+#define CPU_FLAG_C BIT(ctx->regs.f, 4)
+
+u16 cpu_read_reg(reg_type rt);
 
 #endif
 
