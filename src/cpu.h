@@ -2,8 +2,59 @@
 #define CPU_H
 
 #include "common.h"
+#include "instructions.h"
+
+typedef struct {
+    u8 a;
+    u8 f;
+    u8 b;
+    u8 c;
+    u8 d;
+    u8 e;
+    u8 h;
+    u8 l;
+    u16 sp;
+    u16 pc;
+} cpu_registers;
+
+typedef struct {
+    cpu_registers regs;
+
+    // current fetch ... (when we grab a register?)
+    u16 fetched_data; // data que acaba de ser leido en el fetch? (antes de decoe y exec)
+    u16 mem_dest; // memory destination (may or not be set)
+    bool dest_is_mem; // dest is memory or no
+    u8 cur_opcode; // Permite identificar que tipo de instruccion se esta ejecutando, para que la CPU
+    instruction *cur_inst; // current instruction
+
+    bool halted; // Es un indicador que muestra si la CPU esta en estado halted (detenida)
+    bool stepping; //Cuando esta activado, la CPU ejecutara solo una instruccion y luego se detendra (for debugging)
+} cpu_context;
 
 void cpu_init();
 bool cpu_step();
 
 #endif
+
+/*
+
+1. fetch_data:
+Descripcion: Es el dato que acaba de ser recogido o "fetch" desde
+la memoria o desde el bus de datos.
+En otras palabras, cuando la CPU esta ejecutando un ciclo de instruccion,
+primero debe leer (fetch) la instruccion desde la memoria.
+Esta variable almacena el valor que se ha recuperado.
+
+Funcion: Almacena la instruccion o datos que han sido leidos en ese momento,
+antes de que sean decodificados o ejecutados.
+
+2. mem_dest:
+Descripcion: Es la "direccion de memoria de destino" a la que la CPU pretende acceder.
+Este campo puede ser utilizado en operaciones de lectura o escritura,
+y puede o no estar configurado, dependiendo de la operacion que este ejecutando la CPU.
+
+Funcion: En una operacion de lectura o escritura, mem_dest indica a donde se debe leer
+o escribir. Por ejemplo, si la instruccion implica cargar un valor en un registro
+desde una direccion de memoria especifica, mem_dest tendra esa direccion.
+
+*/

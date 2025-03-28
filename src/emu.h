@@ -15,4 +15,7 @@ int emu_run(int argc, char *argv[]);
 // in case it needs to be used eventually for example ui
 emu_context *emu_get_context();
 
+// we use this to syncronize to our ppu and timer, etc...
+void emu_cycles(int cpu_cycles);
+
 #endif

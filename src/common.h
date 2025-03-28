@@ -29,4 +29,7 @@ sino que son sustitucciones de texto que se hacen antes de la compilacion
 
 void delay(u32 ms);
 
+// it's a utility for when a function or part of a functions is not yet implemented
+#define NO_IMPLEMENTED { fprintf(stderr, "NOT YET IMPLEMENTED\n"); exit(-5); }
+
 #endif

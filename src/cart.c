@@ -180,6 +180,16 @@ bool cart_load(char *cart) {
     return true;
 }
 
+u8 cart_read(u16 address) {
+    // for now just ROM ONLY type suported ...
+    return ctx.rom_data[address];
+}
+
+void cart_write(u16 address, u8 value) {
+    // for now ROM only ... (there's no writting to the cartdrige)
+    NO_IMPLEMENTED
+}
+
 
 /*
 int snprintf(char *str, size_t size, const char *format, ...);
