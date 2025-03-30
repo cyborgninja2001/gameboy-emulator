@@ -2,6 +2,9 @@
 
 #include "cpu.h"
 #include "emu.h"
+#include "bus.h"
+
+void cpu_set_flags(cpu_context *ctx, char z, char n, char h, char c); // para que no tire error
 
 // process CPU instructions ...
 
@@ -16,7 +19,31 @@ static void proc_nop(cpu_context *ctx) {
 }
 
 static void proc_ld(cpu_context *ctx) {
-    // TODO ...
+    // special case:
+    if (ctx->dest_is_mem) {
+        // LD (BC), A for instance ...
+        if (ctx->cur_inst->reg2 >= RT_AF) {
+            // if 16bit register
+            emu_cycles(1);
+            bus_write16(ctx->mem_dest, ctx->fetched_data);
+        } else {
+            // regular bus write 8bit
+            bus_write(ctx->mem_dest, ctx->fetched_data);
+        }
+        return;
+    }
+
+    if (ctx->cur_inst->mode == AM_HL_SPR) {
+        u8 hflag = (cpu_read_reg(ctx->cur_inst->reg2) & 0xF) + (ctx->fetched_data & 0xF) >= 0x10;
+        u8 cflag = (cpu_read_reg(ctx->cur_inst->reg2) & 0xFF) + (ctx->fetched_data & 0xFF) >= 0x100;
+
+        cpu_set_flags(ctx, 0, 0, hflag, cflag);
+        // casting to char because fetched data is unsigned but there could be a negative number there
+        cpu_set_reg(ctx->cur_inst->reg1, ctx->cur_inst->reg2 + (char)ctx->fetched_data);
+    }
+
+    // main case:
+    cpu_set_reg(ctx->cur_inst->reg1, ctx->fetched_data);
 }
 
 static bool check_cond(cpu_context *ctx) {

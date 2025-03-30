@@ -39,7 +39,7 @@ bool cpu_step();
 // function pointer: return void & takes a cpu_context pointer
 typedef void (*IN_PROC)(cpu_context *); // es un tipo de dato
 
-// we'll get the isntruction processor by the instruction type
+// we'll get the instruction processor by the instruction type
 // so we can create a function for each instruction
 IN_PROC inst_get_processor(in_type type);
 
@@ -48,6 +48,10 @@ IN_PROC inst_get_processor(in_type type);
 #define CPU_FLAG_C BIT(ctx->regs.f, 4)
 
 u16 cpu_read_reg(reg_type rt);
+
+void cpu_set_reg(reg_type rt, u16 val);
+
+void fetch_data();
 
 #endif
 

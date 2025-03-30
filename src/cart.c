@@ -187,6 +187,7 @@ u8 cart_read(u16 address) {
 
 void cart_write(u16 address, u8 value) {
     // for now ROM only ... (there's no writting to the cartdrige)
+    printf("cart_write(%04X)\n", address); // log
     NO_IMPLEMENTED
 }
 
