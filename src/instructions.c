@@ -3,6 +3,7 @@
 
 // array of all diferent instructions types
 instruction instructions[0x100] = {
+    // 0x0X
     [0x00] = {IN_NOP, AM_IMP},
     [0x01] = {IN_LD, AM_R_D16, RT_BC},
     [0x02] = {IN_LD, AM_MR_R, RT_BC, RT_A},
@@ -112,21 +113,19 @@ instruction instructions[0x100] = {
     [0x7E] = {IN_LD, AM_R_MR, RT_A, RT_HL},
     [0x7F] = {IN_LD, AM_R_R, RT_A, RT_A},
 
-
-
-    [0x05] = {IN_DEC, AM_R, RT_B},
-
-    [0x0E] = {IN_LD, AM_R_D8, RT_C},
-
+    // 0xAX
     [0xAF] = {IN_XOR, AM_R, RT_A},
 
+    //0xCX
     [0xC3] = {IN_JP, AM_D16},
 
     //0xEX
+    [0xE0] = {IN_LDH, AM_A8_R, RT_NONE, RT_A},
     [0xE2] = {IN_LD, AM_MR_R, RT_C, RT_A},
     [0xEA] = {IN_LD, AM_A16_R, RT_NONE, RT_A},
 
     //0xFX
+    [0xF0] = {IN_LDH, AM_R_A8, RT_A},
     [0xF2] = {IN_LD, AM_R_MR, RT_A, RT_C},
     [0xF3] = {IN_DI},
     [0xFA] = {IN_LD, AM_R_A16, RT_A},
@@ -139,6 +138,7 @@ instruction *instruction_by_opcode(u8 opcode) {
 
 // to look at the inst and get a string name for it
 // so it's kind of an array mapped thing
+// esta en el mismo orden que in_type en isntructions.h para el indice
 char *inst_lookup[] = {
     "<NONE>",
     "NOP",

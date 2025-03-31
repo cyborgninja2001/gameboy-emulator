@@ -31,6 +31,7 @@ typedef struct {
     bool stepping; //Cuando esta activado, la CPU ejecutara solo una instruccion y luego se detendra (for debugging)
 
     bool int_master_enable;
+    u8 ie_register; // interrupt enable register
 } cpu_context;
 
 void cpu_init();
@@ -52,6 +53,9 @@ u16 cpu_read_reg(reg_type rt);
 void cpu_set_reg(reg_type rt, u16 val);
 
 void fetch_data();
+
+u8 cpu_get_ie_register();
+void cpu_set_ie_register(u8 n);
 
 #endif
 

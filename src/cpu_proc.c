@@ -33,6 +33,7 @@ static void proc_ld(cpu_context *ctx) {
         return;
     }
 
+    // special case:
     if (ctx->cur_inst->mode == AM_HL_SPR) {
         u8 hflag = (cpu_read_reg(ctx->cur_inst->reg2) & 0xF) + (ctx->fetched_data & 0xF) >= 0x10;
         u8 cflag = (cpu_read_reg(ctx->cur_inst->reg2) & 0xFF) + (ctx->fetched_data & 0xFF) >= 0x100;
@@ -89,6 +90,17 @@ void cpu_set_flags(cpu_context *ctx, char z, char n, char h, char c) {
     }
 }
 
+// load in the hram (high ram)
+static void proc_ldh(cpu_context *ctx) {
+    if (ctx->cur_inst->reg1 == RT_A) {
+        cpu_set_reg(ctx->cur_inst->reg1, bus_read(0xFF00 | ctx->fetched_data));
+    } else {
+        bus_write(0xFF00 | ctx->fetched_data, ctx->cur_inst->reg2);
+    }
+
+    emu_cycles(1);
+}
+
 static void proc_xor(cpu_context *ctx) {
     ctx->regs.a ^= ctx->fetched_data & 0xFF;
     cpu_set_flags(ctx, ctx->regs.a == 0, 0, 0, 0);
@@ -99,6 +111,7 @@ static IN_PROC processors[] = {
     [IN_NONE] = proc_none,
     [IN_NOP] = proc_nop,
     [IN_LD] = proc_ld,
+    [IN_LDH] = proc_ldh,
     [IN_JP] = proc_jp,
     [IN_DI] = proc_di, // disable interrupts
     [IN_XOR] = proc_xor,
