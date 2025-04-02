@@ -19,6 +19,165 @@ static void proc_nop(cpu_context *ctx) {
     // it doesn't do anything
 }
 
+reg_type rt_lookup[] = {
+    RT_B,
+    RT_C,
+    RT_D,
+    RT_E,
+    RT_H,
+    RT_L,
+    RT_HL,
+    RT_A,
+};
+
+reg_type decode_reg(u8 reg) {
+    if (reg > 0b111) {
+        return RT_NONE;
+    }
+
+    return rt_lookup[reg];
+}
+
+static void proc_cb(cpu_context *ctx) {
+    // we're going to decode that second byte that comes right after the cb
+    u8 op = ctx->fetched_data;
+    reg_type reg = decode_reg(op & 0b111); // mask the bottom 3 bits
+    u8 bit = (op >> 3) & 0b111; // now we need to figure out which bit is being used
+    u8 bit_op = (op >> 6) & 0b11; // we get the operation
+    u8 reg_val = cpu_read_reg8(reg);
+
+    emu_cycles(1);
+
+    if (reg == RT_HL) { // special case??
+        emu_cycles(2);
+    }
+
+    switch(op) {
+        case 1:
+            //BIT
+            // it gets whether or not the bit is set on that register
+            cpu_set_flags(ctx, !(reg_val & (1 << bit)), 0, 1, -1);
+            return;
+
+        case 2:
+            //RST (reset)
+            //reset the bit on that register
+            reg_val &= ~(1 << bit);
+            cpu_set_reg8(reg, reg_val);
+            return;
+
+        case 3:
+            //SET
+            reg_val |= (1 << bit);
+            cpu_set_reg8(reg, reg_val);
+            return;
+    }
+
+    // if it isn't one of those 3 values: we move on to the next section ->
+    bool flagC = CPU_FLAG_C;
+
+    // switch the bit that's being worked on
+    switch(bit) {
+        case 0: {
+            //RLC (rotate left all bit 7 to the carry flag)
+            bool setC = false;
+            u8 result = (reg_val << 1) & 0xFF;
+
+            if ((reg_val & (1 << 7)) != 0) {
+                // if bit seven is not set on the reg_val
+                result |= 1;
+                setC = true;
+            }
+
+            cpu_set_reg8(reg, result);
+            cpu_set_flags(ctx, result == 0, false, false, setC);
+        } return;
+
+        case 1: {
+            //RRC (rotate right all bit 7 to carry flag)
+            u8 old = reg_val;
+            reg_val >>= 1;
+            reg_val |= (old << 7);
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, false, false, old & 1);
+        } return;
+
+        case 2: {
+            //RL (rotate left)
+            u8 old = reg_val;
+            reg_val <<= 1;
+            reg_val |= flagC;
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, false, false, !!(old & 0x80));
+        } return;
+
+        case 3: {
+            //RR (rotate right)
+            u8 old = reg_val;
+            reg_val >>= 1;
+
+            reg_val |= (flagC << 7);
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, false, false, old & 1);
+        } return;
+
+        case 4: {
+            //SLA (shift left and carry)
+            u8 old = reg_val;
+            reg_val <<= 1;
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, false, false, !!(old & 0x80));
+        } return;
+
+        case 5: {
+            //SRA
+            u8 u = (int8_t)reg_val >> 1;
+            cpu_set_reg8(reg, u);
+            cpu_set_flags(ctx, !u, 0, 0, reg_val & 1);
+        } return;
+
+        case 6: {
+            //SWAP (swap the 2 nibbles of the byte? o algo asi)
+            reg_val = ((reg_val & 0xF0) >> 4) | ((reg_val & 0xF) << 4);
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, reg_val == 0, false, false, false);
+        } return;
+
+        case 7: {
+            //SRL (most significant bit is set to zero?)
+            u8 u = reg_val >> 1;
+            cpu_set_reg8(reg, u);
+            cpu_set_flags(ctx, !u, 0, 0, reg_val & 1);
+        } return;
+    }
+
+    // he said that he thinks this is not possible pero por las dudas
+    fprintf(stderr, "ERROR: INVALID CB; %02X", op);
+    NO_IMPLEMENTED
+}
+
+static void proc_and(cpu_context *ctx) {
+    // all and operations are being done on a
+    ctx->regs.a &= ctx->fetched_data;
+    cpu_set_flags(ctx, ctx->regs.a == 0, 0, 1, 0);
+
+}
+
+static void proc_or(cpu_context *ctx) {
+    // all xor operations are being done on a
+    ctx->regs.a |= ctx->fetched_data & 0xFF;
+    cpu_set_flags(ctx, ctx->regs.a == 0, 0, 0, 0);
+}
+
+static void proc_cp(cpu_context *ctx) {
+    int n = (int)ctx->regs.a - (int)ctx->fetched_data;
+
+    cpu_set_flags(ctx, n == 0, 1, ((int)ctx->regs.a & 0x0F) - ((int)ctx->fetched_data & 0x0F) < 0, n < 0);
+}
+
 static bool is_16_bit(reg_type rt) {
     return rt >= RT_AF;
 }
@@ -328,6 +487,10 @@ static IN_PROC processors[] = {
     [IN_ADC] = proc_adc,
     [IN_SUB] = proc_sub,
     [IN_SBC] = proc_sbc,
+    [IN_AND] = proc_and,
+    [IN_OR] = proc_or,
+    [IN_CP] = proc_cp,
+    [IN_CB] = proc_cb,
     [IN_RETI] = proc_reti,
     [IN_XOR] = proc_xor,
 };

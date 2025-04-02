@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "bus.h"
 
 extern cpu_context ctx;
 
@@ -66,6 +67,40 @@ void cpu_set_reg(reg_type rt, u16 val) {
         case RT_PC: ctx.regs.pc = val; break;
         case RT_SP: ctx.regs.sp = val; break;
         case RT_NONE: break;
+    }
+}
+
+u8 cpu_read_reg8(reg_type rt) {
+    switch(rt) {
+        case RT_A: return ctx.regs.a;
+        case RT_F: return ctx.regs.f;
+        case RT_B: return ctx.regs.b;
+        case RT_C: return ctx.regs.c;
+        case RT_H: return ctx.regs.h;
+        case RT_L: return ctx.regs.l;
+        case RT_HL: {
+            return bus_read(cpu_read_reg(RT_HL)); // read at the address of HL
+        }
+        default:
+            printf("**ERROR INVALID REG8:%d\n", rt);
+            NO_IMPLEMENTED
+    }
+}
+
+void cpu_set_reg8(reg_type rt, u8 val) {
+    switch(rt) {
+        case RT_A: ctx.regs.a = val & 0xFF; break;
+        case RT_F: ctx.regs.f = val & 0xFF; break;
+        case RT_B: ctx.regs.b = val & 0xFF; break;
+        case RT_C: ctx.regs.c = val & 0xFF; break;
+        case RT_D: ctx.regs.d = val & 0xFF; break;
+        case RT_E: ctx.regs.e = val & 0xFF; break;
+        case RT_H: ctx.regs.h = val & 0xFF; break;
+        case RT_L: ctx.regs.l = val & 0xFF; break;
+        case RT_HL: bus_write(cpu_read_reg(RT_HL), val); break;
+        default:
+            printf("**ERROR INVALID REG8: %d\n", rt);
+            NO_IMPLEMENTED
     }
 }
 
