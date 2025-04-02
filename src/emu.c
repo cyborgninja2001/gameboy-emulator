@@ -18,6 +18,10 @@
 
 static emu_context ctx; // static so it's only accesible inside this file
 
+emu_context *emu_get_context() {
+    return &ctx;
+}
+
 void delay(u32 ms) {
     SDL_Delay(ms);
 }
