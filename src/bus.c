@@ -45,7 +45,8 @@ u8 bus_read(u16 address) {
         // OAM (for the ppu?)
         // TODO
         printf("UNSUPPORTED bus_read(%04X)\n", address);
-        NO_IMPLEMENTED
+        //NO_IMPLEMENTED
+        return 0;
     } else if (address < 0xFF00) {
         // reserved unusable
         return 0;
@@ -53,7 +54,8 @@ u8 bus_read(u16 address) {
         // IO registers
         // TODO
         printf("UNSUPPORTED bus_read(%04X)\n", address);
-        NO_IMPLEMENTED
+        //NO_IMPLEMENTED
+        return 0;
     } else if (address == 0xFFFF) {
         // CPU enable register
         return cpu_get_ie_register();
@@ -71,7 +73,7 @@ void bus_write(u16 address, u8 value) {
         // Char/Map Data
         // TODO
         printf("UNSUPPORTED bus_write(%04X)\n", address);
-        NO_IMPLEMENTED
+        //NO_IMPLEMENTED
     } else if (address < 0xC000) {
         // external RAM (cartdrige RAM)
         cart_write(address, value);
@@ -83,7 +85,7 @@ void bus_write(u16 address, u8 value) {
     } else if (address < 0xFEA0) {
         // OAM
         printf("UNSUPPORTED bus_write(%04X)\n", address);
-        NO_IMPLEMENTED
+        //NO_IMPLEMENTED
     } else if (address < 0xFF00) {
         // unusable reserved
     } else if (address < 0xFF80) {
